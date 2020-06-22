@@ -19,7 +19,7 @@ def model_fn(model_dir):
     """Load the PyTorch model from the `model_dir` directory."""
     print("Loading model.")
 
-    # First, load the parameters used to create the model.
+    # Load the parameters used to create the model.
     model_info = {}
     model_info_path = os.path.join(model_dir, 'model_info.pth')
     with open(model_info_path, 'rb') as f:
@@ -65,28 +65,17 @@ def predict_fn(input_data, model):
     if model.word_dict is None:
         raise Exception('Model has not been loaded properly, no word_dict.')
     
-    # TODO: Process input_data so that it is ready to be sent to our model.
-    #       You should produce two variables:
-    #         data_X   - A sequence of length 500 which represents the converted review
-    #         data_len - The length of the review
-    
+    # Process input_data to be sent the model.     
     words_data_X = review_to_words(input_data)
     data_X, data_len = convert_and_pad(model.word_dict, words_data_X)
 
-
-    # Using data_X and data_len we construct an appropriate input tensor. Remember
-    # that our model expects input data of the form 'len, review[500]'.
     data_pack = np.hstack((data_len, data_X))
     data_pack = data_pack.reshape(1, -1)
     
     data = torch.from_numpy(data_pack)
     data = data.to(device)
-
-    # Make sure to put the model into evaluation mode
+    
     model.eval()
-
-    # TODO: Compute the result of applying the model to the input data. The variable `result` should
-    #       be a numpy array which contains a single integer which is either 1 or 0
     output = np.squeeze(model(data.detach()))
     
     if output > 0.5:
